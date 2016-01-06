@@ -40,6 +40,34 @@ z_acccp08:--z_acccp08 不分部門
 	insert into @tmp(accc1,accc2,accc3,accc4,accc5,accc6,accc7,dmoney,cmoney,partno,part,noq,zno,worker)
 	execute sp_executesql @cmd,N'@t_bno nvarchar(20),@t_eno nvarchar(20),@islock int'
 	,@t_bno=@t_bno,@t_eno=@t_eno,@islock=@islock
+	
+	declare @tmpaccc table(
+			acc1 nvarchar(30),
+			acc2 nvarchar(50)
+	)
+
+	set @cmd = " select acc1,acc2 from acc"+@t_accy+" order by acc1"
+	insert @tmpaccc
+	execute sp_executesql @cmd
+	
+	insert @tmp(accc1,accc2,accc3,accc4,accc5,accc6,accc7,dmoney,cmoney,partno,part,noq,zno,worker)
+	select accc1,accc2,accc3,'借'accc4
+	,(select top 1 acc1 from @tmpaccc where acc2 like '現金%' order by (case when acc2='現金' then 1 when acc2='現金收入' then 2 else 3 end),acc1) accc5
+	,(select top 1 acc2 from @tmpaccc where acc2 like '現金%' order by (case when acc2='現金' then 1 when acc2='現金收入' then 2 else 3 end),acc1) accc6
+	,'' accc7,SUM(cmoney) dmoney,SUM(dmoney)cmoney,'' partno,'' part,MAX(noq)+'z'noq,''zno,MAX(worker)worker
+	from @tmp 
+	group by accc1,accc2,accc3,partno,part
+	having accc1='1'
+	
+	insert @tmp(accc1,accc2,accc3,accc4,accc5,accc6,accc7,dmoney,cmoney,partno,part,noq,zno,worker)
+	select accc1,accc2,accc3,'貸'accc4
+	,(select top 1 acc1 from @tmpaccc where acc2 like '現金%' order by (case when acc2='現金' then 1 when acc2='現金收入' then 2 else 3 end),acc1) accc5
+	,(select top 1 acc2 from @tmpaccc where acc2 like '現金%' order by (case when acc2='現金' then 1 when acc2='現金收入' then 2 else 3 end),acc1) accc6
+	,'' accc7,SUM(cmoney) dmoney,SUM(dmoney)cmoney,'' partno,'' part,MAX(noq)+'z'noq,''zno,MAX(worker)worker
+	from @tmp 
+	group by accc1,accc2,accc3,partno,part
+	having accc1='2'
+	
 	--------------------------------------------------------------------------------------------------
 	declare @n int
 	declare @m int
@@ -372,6 +400,34 @@ declare @tmp table(
 	insert into @tmp(accc1,accc2,accc3,accc4,accc5,accc6,accc7,dmoney,cmoney,partno,part,noq,zno,worker,proj)
 	execute sp_executesql @cmd,N'@t_bno nvarchar(20),@t_eno nvarchar(20),@islock int'
 	,@t_bno=@t_bno,@t_eno=@t_eno,@islock=@islock
+	
+	declare @tmpaccc table(
+			acc1 nvarchar(30),
+			acc2 nvarchar(50)
+	)
+
+	set @cmd = " select acc1,acc2 from acc"+@t_accy+" order by acc1"
+	insert @tmpaccc
+	execute sp_executesql @cmd
+	
+	insert @tmp(accc1,accc2,accc3,accc4,accc5,accc6,accc7,dmoney,cmoney,partno,part,noq,zno,worker,proj)
+	select accc1,accc2,accc3,'借'accc4
+	,(select top 1 acc1 from @tmpaccc where acc2 like '現金%' order by (case when acc2='現金' then 1 when acc2='現金收入' then 2 else 3 end),acc1) accc5
+	,(select top 1 acc2 from @tmpaccc where acc2 like '現金%' order by (case when acc2='現金' then 1 when acc2='現金收入' then 2 else 3 end),acc1) accc6
+	,'' accc7,SUM(cmoney) dmoney,SUM(dmoney)cmoney,'' partno,'' part,MAX(noq)+'z'noq,''zno,MAX(worker)worker,''proj
+	from @tmp 
+	group by accc1,accc2,accc3,partno,part
+	having accc1='1'
+	
+	insert @tmp(accc1,accc2,accc3,accc4,accc5,accc6,accc7,dmoney,cmoney,partno,part,noq,zno,worker,proj)
+	select accc1,accc2,accc3,'貸'accc4
+	,(select top 1 acc1 from @tmpaccc where acc2 like '現金%' order by (case when acc2='現金' then 1 when acc2='現金收入' then 2 else 3 end),acc1) accc5
+	,(select top 1 acc2 from @tmpaccc where acc2 like '現金%' order by (case when acc2='現金' then 1 when acc2='現金收入' then 2 else 3 end),acc1) accc6
+	,'' accc7,SUM(cmoney) dmoney,SUM(dmoney)cmoney,'' partno,'' part,MAX(noq)+'z'noq,''zno,MAX(worker)worker,''proj
+	from @tmp 
+	group by accc1,accc2,accc3,partno,part
+	having accc1='2'
+	
 	--------------------------------------------------------------------------------------------------
 	declare @n int
 	declare @m int
@@ -3069,7 +3125,7 @@ z_acccp_yc07:--z_acccp_yc07 ref. z_acccp07 不分部門
 	declare @maxcount_accc6 int
 	set @maxcount_accc6 = 20
 	declare @maxcount_accc7 int
-	set @maxcount_accc7 = 36
+	set @maxcount_accc7 = 35
 	declare @string nvarchar(max)
 	
 	declare cursor_table cursor for
@@ -3167,7 +3223,7 @@ z_acccp_yc07:--z_acccp_yc07 ref. z_acccp07 不分部門
 	declare @page int
 	declare @recno int
 	declare @curline int -- 當前行數
-	set @rowline = 20
+	set @rowline = 16
 	set @endline = 1
 	
 	declare @gno nvarchar(10)
@@ -3184,7 +3240,7 @@ z_acccp_yc07:--z_acccp_yc07 ref. z_acccp07 不分部門
 		select @zno=zno,@worker=worker from @tmp2 where accc3=@accc3
 		
 		declare cursor_table2 cursor for
-		select accc4,accc5,accc6,accc7,dmoney,cmoney,partno,part,noq,cn1,cn2 from @tmp2 where accc3=@accc3 order by accc4
+		select accc4,accc5,accc6,accc7,dmoney,cmoney,partno,part,noq,cn1,cn2 from @tmp2 where accc3=@accc3
 		open cursor_table2
 		fetch next from cursor_table2
 		into @accc4,@accc5,@accc6,@accc7,@dmoney,@cmoney,@partno,@part,@noq,@cn1,@cn2
@@ -3251,6 +3307,8 @@ z_acccp_yc07:--z_acccp_yc07 ref. z_acccp07 不分部門
 	close cursor_table
 	deallocate cursor_table
 	--------------------------------------------------------------------------------------------------
+	update @tmp3 set acomp = case when LEN(acomp)=0 then (select top 1 acomp from acomp) else acomp end
+	
 	select a.* 
 	,'<a style="font-family: Times New Roman,標楷體, serif'+CHAR(59)+'">' +case a.accc1 when '1' then '現金收入傳票' when '2' then '現金支出傳票' when '3' then '轉帳傳票' end +'('+LEFT(@t_accy,3)+')'+'</a>' titela 
 	,a.page+1 pp1
